@@ -15,6 +15,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 //setting up pugs
 app.set('view engine', 'pug');
@@ -62,11 +63,15 @@ app.use(
   }),
 );
 
+//to compress response send to client
+app.use(compression());
+
 // routes
+
 //middle ware to get request time
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-   next();
+  next();
 });
 app.use('/', viewRouter);
 
