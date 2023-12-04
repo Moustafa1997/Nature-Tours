@@ -66,12 +66,7 @@ app.use(
 //middle ware to get request time
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  //console.log('hello from middleware');
-  //console.log(req.headers);
-  // console.log(x);(
-  //console.log(req.cookies);
-
-  next();
+   next();
 });
 app.use('/', viewRouter);
 
@@ -79,6 +74,7 @@ app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/bookings', bookingRouter);
+
 // middle ware to avoid any wrong linl we use all for all htt method not use get the post
 app.all('*', (req, res, next) => {
   // const err = new Error(`Cannot find ${req.originalUrl} on the server`);
