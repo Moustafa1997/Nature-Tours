@@ -5,7 +5,7 @@ export const displayMap = (locations) => {
 
   var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/aboulazm1997/clozuraai001p01pc8qks1i62',
+    style: 'mapbox://styles/aboulazm1997/clprmq962016w01p99ber577n',
     scrollZoom: false,
     // center: [-118.113491, 34.111745],
     // zoom: 10,
