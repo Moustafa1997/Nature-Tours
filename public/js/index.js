@@ -1,5 +1,6 @@
 import '@babel/polyfill';
 import { login } from './login';
+import { signup } from './signup';
 import { displayMap } from './mapbox';
 import { logout } from './login';
 import { updateData } from './updateSetting';
@@ -9,6 +10,7 @@ import { bookTour } from './stripe';
 //dom elements
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
+const signupForm = document.querySelector('.form--signup');
 const logOut = document.querySelector('.nav__el--logout');
 const userdata = document.querySelector('.form-user-data');
 const userPassword = document.querySelector('.form-user-password');
@@ -28,6 +30,20 @@ if (loginForm) {
     const password = document.getElementById('password').value;
 
     login(email, password);
+  });
+}
+if (signupForm) {
+  //console.log(signupForm);
+  signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+    if (!name || !email || !password || !passwordConfirm)
+      return alert('All fields are required!');
+
+    signup(name, email, password, passwordConfirm);
   });
 }
 if (logOut) {

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { showAlert } from './alert';
 
 export const login = async (email, password) => {
-  console.log(email, password);
+  //console.log(email, password);
   try {
     const res = await axios({
       method: 'POST',
@@ -19,7 +19,7 @@ export const login = async (email, password) => {
       }, 1000);
     }
 
-    console.log(res);
+    //console.log(res);
   } catch (err) {
     showAlert('error', err.response.data.message);
     //console.log(err.response);

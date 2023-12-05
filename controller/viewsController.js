@@ -48,6 +48,12 @@ exports.loginPage = (req, res) => {
     title: 'Log into your account',
   });
 };
+//sign up
+exports.signupPage = (req, res) => {
+  res.status(200).render('signup', {
+    title: 'create a new account',
+  });
+};
 //get account
 exports.getAccount = catchAsync(async (req, res, next) => {
   //1) get the user from the session

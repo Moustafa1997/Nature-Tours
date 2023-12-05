@@ -15,6 +15,7 @@ viewer.get(
 );
 viewer.get('/tour/:slug', viewController.getTour);
 viewer.get('/login', viewController.loginPage);
+viewer.get('/signup', viewController.signupPage);
 viewer.post(
   '/submit-user-data',
   authController.protect,
