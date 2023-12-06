@@ -11,7 +11,8 @@ https://documenter.getpostman.com/view/31006031/2s9YeN2Tvp
 https://nature-tourss.onrender.com/
 
 # How to run this project in your local machine
-npm i
+ -npm i
+
 -npm run start:dev     : for start server in development.
 
 -npm rub start:prod    : for start server in production.
