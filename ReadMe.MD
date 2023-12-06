@@ -12,9 +12,11 @@ https://nature-tourss.onrender.com/
 
 # How to run this project in your local machine
 npm i
-npm run start:dev     : for start server in development.
-npm rub start:prod    : for start server in production.
-prepare all env-variable
+-npm run start:dev     : for start server in development.
 
-finally write http://127.0.0.1:3000/ instead of https://nature-tourss.onrender.com/
+-npm rub start:prod    : for start server in production.
+
+-prepare all env-variable
+
+-finally write http://127.0.0.1:3000/ instead of https://nature-tourss.onrender.com/
 
