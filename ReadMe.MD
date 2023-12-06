@@ -1,6 +1,6 @@
 # Nature tours App
 
-Built using latest technologies: nodeJS, express, MongoDB,and pug template and nore❤😁
+Built using latest technologies: nodeJS, express, MongoDB,and pug template and More❤😁
 
 ## You can read the documentation for the Api here
 
