@@ -10,13 +10,12 @@
   <a href="#demonstration">Demonstration</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#api-usage">API Usage</a> •
-  <a href="#deployment">Deployment</a> •
   <a href="#build-with">Build With</a> •
   <a href="#to-do">To-do</a> •
   <a href="#installation">Installation</a> • 
   <a href="#known-bugs">Known Bugs</a> • 
   <a href="#future-updates">Future Updates</a> • 
-  <a href="#acknowledgement">Acknowledgement</a>
+ 
 </p>
 
 ## Key Features 
@@ -210,12 +209,12 @@ eslint-plugin-import eslint-plugin-jsx-a11y  eslint-plugin-react --save-dev
 
 Pull requests are welcome but please open an issue and discuss what you will do before 😊
 
-## Known Bugs 🚨
+## Known Bugs 
 
 Feel free to email me at moustafa.aboulazm1997@gmail.com if you run into any issues or have questions, ideas or concerns.
 Please enjoy and feel free to share your opinion, constructive criticism, or comments about my work. Thank you! 🙂
 
-## Future Updates 🪴
+## Future Updates 
 
 - Enable Software Testing (Jest-tool)
 - Improve overall UX/UI and fix bugs
