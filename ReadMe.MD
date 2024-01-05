@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://nature-tourss.onrender.com/"><img src="" alt="Nature-tours" width="200"></a>
+ 
   <br>
   Nature-tours
   <br>
