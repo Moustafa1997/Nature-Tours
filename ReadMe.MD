@@ -1,9 +1,6 @@
 <h1 align="center">
   <br>
   <a href="https://nature-tourss.onrender.com/"><img src="" alt="Nature-tours" width="200"></a>
-  <br>
-  Nature-tours
-  <br>
 </h1>
 
 <h4 align="center">An awesome tour booking for tourism company site built on top of <a href="https://nodejs.org/en/" target="_blank">NodeJS</a>.</h4>
