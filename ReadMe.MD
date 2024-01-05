@@ -53,7 +53,7 @@
   - A regular user can not add a tour to their list of favorite tours when it is already a favorite.
 - Credit card Payment
 
-## Demonstration 🖥️
+## Demonstration 
 
 #### Home Page :
 
@@ -79,7 +79,7 @@
 
 ![rsz_adminprofile](https://user-images.githubusercontent.com/58518192/72607648-4d463a80-394b-11ea-972f-a73160cfaa5b.png)
 
-## How To Use 🤔
+## How To Use
 
 ### Book a tour
 
@@ -129,7 +129,7 @@ https://nature-tourss.onrender.com/api/v1/tours/top-5-cheap
 Get Tours Within Radius 👉🏻
 https://nature-tourss.onrender.com/api/v1/tours/tours-within/200/center/34.098453,-118.096327/unit/mi
 
-## Build With 🏗️
+## Build With 
 
 - [NodeJS](https://nodejs.org/en/) - JS runtime environment
 - [Express](http://expressjs.com/) - The web framework used
@@ -144,7 +144,7 @@ https://nature-tourss.onrender.com/api/v1/tours/tours-within/200/center/34.09845
 
 - [Mapbox](https://www.mapbox.com/) - Displaying the different locations of each tour.
 
-## To-do 🗒️
+## To-do 
 
 - Review and rating
   - Allow users to add a review directly at the website after they have taken a tour
@@ -187,7 +187,7 @@ If you wish to play around with the code base in your local environment, do the 
 * Your app should be running just fine.
 ```
 
-## Installation 🛠️
+## Installation 
 
 You can fork the app or you can git-clone the app into your local machine. Once done, please install all the
 dependencies by running
