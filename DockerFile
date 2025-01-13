@@ -8,12 +8,23 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
 
+# Install dependencies
 RUN npm install
+
+# If you are building for production, you can use:
+# RUN npm ci --only=production
 
 # Bundle app source
 COPY . .
 
+# Build the JavaScript files (if needed)
+RUN npm run build:js
+
 # Expose the port
 EXPOSE 4100
 
-CMD [ "node", "server.js" ]
+# Set environment variables
+ENV NODE_ENV=production
+
+# Run the application
+CMD [ "npm", "start" ]
