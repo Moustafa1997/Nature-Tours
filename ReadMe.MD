@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://nature-tourss.onrender.com/"><img src="" alt="Nature-tours" width="200"></a>
+  <a href="https://nature-tours-development.up.railway.app/"><img src="" alt="Nature-tours" width="200"></a>
 </h1>
 
 <h4 align="center">An awesome tour booking for tourism company site built on top of <a href="https://nodejs.org/en/" target="_blank">NodeJS</a>.</h4>
@@ -117,16 +117,16 @@ Check [Nature-tours API Documentation](https://documenter.getpostman.com/view/31
 <b> API Features: </b>
 
 Tours List 👉🏻
-https://nature-tourss.onrender.com/api/v1/tours
+https://nature-tours-development.up.railway.app/api/v1/tours
 
 Tours Statics 👉🏻
-https://nature-tourss.onrender.com/api/v1/tours/tour-stats
+https://nature-tours-development.up.railway.app/api/v1/tours/tour-stats
 
 Get Top 5 Cheap Tours 👉🏻
-https://nature-tourss.onrender.com/api/v1/tours/top-5-cheap
+https://nature-tours-development.up.railway.app/api/v1/tours/top-5-cheap
 
 Get Tours Within Radius 👉🏻
-https://nature-tourss.onrender.com/api/v1/tours/tours-within/200/center/34.098453,-118.096327/unit/mi
+https://nature-tours-development.up.railway.app/api/v1/tours/tours-within/200/center/34.098453,-118.096327/unit/mi
 
 ## Build With 
 
@@ -224,4 +224,4 @@ Please enjoy and feel free to share your opinion, constructive criticism, or com
 
 ## Deployed Version 🚀
 
-Live demo (Feel free to visit) 👉🏻 : https://nature-tourss.onrender.com/
+Live demo (Feel free to visit) 👉🏻 : https://nature-tours-development.up.railway.app/
