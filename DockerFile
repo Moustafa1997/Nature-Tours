@@ -11,8 +11,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# If you are building for production, you can use:
-# RUN npm ci --only=production
 
 # Bundle app source
 COPY . .
@@ -25,6 +23,8 @@ EXPOSE 4100
 
 # Set environment variables
 ENV NODE_ENV=production
+# If you are building for production, you can use:
+# RUN npm ci --only=production
 
 # Run the application
 CMD [ "npm", "start" ]
