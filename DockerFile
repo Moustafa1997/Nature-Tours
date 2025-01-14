@@ -9,10 +9,10 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # If you are building for production, you can use:
-# RUN npm ci --only=production
+# RUN npm install --only=production --legacy-peer-deps
 
 # Bundle app source
 COPY . .
