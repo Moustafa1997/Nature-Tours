@@ -40,7 +40,6 @@
     "str": "^0.7.1",
     "stripe": "^14.5.0",
     "stripe-client": "^1.1.5",
-    "undefined": "^0.1.0",
     "validator": "^13.11.0",
     "xss-clean": "^0.1.4"
   },
