@@ -21,10 +21,6 @@ RUN npm run build:js
 # Expose the port
 EXPOSE 4100
 
-# Set environment variables
-ENV NODE_ENV=production
-# If you are building for production, you can use:
-# RUN npm ci --only=production
 
 # Run the application
 CMD [ "npm", "start" ]
