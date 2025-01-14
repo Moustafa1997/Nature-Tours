@@ -9,6 +9,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
+RUN npm install --save @sendgrid/mail
 RUN npm install
 
 # If you are building for production, you can use:
