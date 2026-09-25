@@ -1,5 +1,5 @@
-# Use Node.js v14
-FROM node:14
+# Use Node.js v22 LTS (node 14 is end-of-life and unsupported by current deps)
+FROM node:22-slim
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -8,23 +8,24 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
-
-# If you are building for production, you can use:
-# RUN npm install --only=production --legacy-peer-deps
+# Install dependencies (dev deps are needed to build the frontend bundle)
+RUN npm ci --legacy-peer-deps
 
 # Bundle app source
 COPY . .
 
-# Build the JavaScript files (if needed)
-RUN npm run build:js
-
-# Expose the port
-EXPOSE 4100
+# Build the JavaScript files, then drop dev dependencies
+RUN npm run build:js && npm prune --omit=dev --legacy-peer-deps
 
 # Set environment variables
 ENV NODE_ENV=production
 
+# Expose the port
+EXPOSE 4100
+
+# Run as the unprivileged "node" user
+RUN chown -R node:node /usr/src/app/public/img
+USER node
+
 # Run the application
-CMD [ "npm", "start" ]
+CMD [ "node", "server.js" ]

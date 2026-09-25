@@ -4,7 +4,6 @@ const catchAsync = require('./../utils/catchAsync');
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { token } = require('morgan');
 const multer = require('multer');
 const sharp = require('sharp');
 
@@ -19,7 +18,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 //multer middleware
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 exports.uploadUserphoto = upload.single('photo');
 // middle ware to resize image
@@ -33,6 +36,12 @@ exports.resizeUserphoto = catchAsync(async (req, res, next) => {
     .toFile(`public/img/users/${req.file.filename}`);
   next();
 });
+
+// base url used in emails; prefer configured APP_URL to avoid host header injection
+const baseUrl = (req) =>
+  process.env.APP_URL
+    ? process.env.APP_URL.replace(/\/$/, '')
+    : `${req.protocol}://${req.get('host')}`;
 
 //filter object
 const filterObj = (obj, ...arg) => {
@@ -55,8 +64,14 @@ exports.getMe = (req, res, next) => {
 // to return token
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
+    algorithm: 'HS256',
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
+};
+
+// verify token and only accept the algorithm we sign with
+const verifyToken = (token) => {
+  return jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 };
 
 // create function to send token
@@ -67,6 +82,7 @@ const sendTokenRespone = (user, code, res, message) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
+    sameSite: 'lax',
   };
   if (process.env.NODE_ENV === 'production') CookieOptions.secure = true;
   res.cookie('jwt', token, CookieOptions);
@@ -84,9 +100,14 @@ const sendTokenRespone = (user, code, res, message) => {
 
 // to sign up
 exports.SignUp = catchAsync(async (req, res, next) => {
-  const newUser = await User.create(req.body);
-  const url = `${req.protocol}://${req.get('host')}/me`;
-  console.log(url);
+  // only allow whitelisted fields so nobody can sign up as admin (role, active...)
+  const newUser = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    passwordConfirm: req.body.passwordConfirm,
+  });
+  const url = `${baseUrl(req)}/me`;
   await new Email(newUser, url).sendWelcome();
 
   // Create token
@@ -98,6 +119,9 @@ exports.SignUp = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    return next(new AppError('Please provide email and password', 400));
+  }
   // check if the email and password exist in our database
   if (!email || !password) {
     return next(new AppError('Please provide email and password', 400));
@@ -113,7 +137,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
 // to log out
 exports.logout = (req, res) => {
-  res.clearCookie('jwt');
+  res.clearCookie('jwt', { httpOnly: true, sameSite: 'lax' });
   //clear header jwt token
 
   res.json({
@@ -142,7 +166,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
   // Verification token
-  const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = verifyToken(token);
 
   // check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -174,7 +198,7 @@ exports.isLoggendIn = async (req, res, next) => {
   try {
     if (req.cookies.jwt) {
       // Verification token
-      const decoded = await jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
+      const decoded = verifyToken(req.cookies.jwt);
 
       // check if user still exists
       const currentUser = await User.findById(decoded.id);
@@ -202,8 +226,7 @@ exports.isLoggendIn = async (req, res, next) => {
 // wrap funtion return a function
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      console.log(req.user);
+    if (!req.user || !roles.includes(req.user.role)) {
       return next(
         new AppError('You do not have permission to perform this action', 403),
       );
@@ -214,22 +237,27 @@ exports.restrictTo = (...roles) => {
 // forget password
 exports.forgetpassword = catchAsync(async (req, res, next) => {
   // check if user is exists
+  const genericResponse = {
+    status: 'success',
+    message: 'If that email exists, a reset token has been sent to it!',
+  };
+  if (typeof req.body.email !== 'string') {
+    return next(new AppError('Please provide your email address', 400));
+  }
   const user = await User.findOne({ email: req.body.email });
+  // do not reveal whether an account exists (user enumeration)
   if (!user) {
-    return next(new AppError('there is no user with this email address', 404));
+    return res.status(200).json(genericResponse);
   }
   //generate token
   const resetToken = user.createPasswordResetToken();
-  console.log('fk' + resetToken);
   await user.save({
     validateBeforeSave: false,
   });
 
   try {
     // send email
-    const resetURL = `${req.protocol}://${req.get(
-      'host',
-    )}/api/v1/users/resetPassword/${resetToken}`;
+    const resetURL = `${baseUrl(req)}/api/v1/users/resetPassword/${resetToken}`;
     await new Email(user, resetURL).sendPasswordReset();
   } catch (err) {
     user.passwordResetToken = undefined;
@@ -237,17 +265,12 @@ exports.forgetpassword = catchAsync(async (req, res, next) => {
     await user.save({
       validateBeforeSave: false,
     });
-    console.log(err);
+    console.error(err);
     return next(
-      new AppError('There was an error sending the email. Try again later!'),
-      500,
+      new AppError('There was an error sending the email. Try again later!', 500),
     );
   }
-  res.status(200).json({
-    status: 'success',
-    message: 'Token sent to email!',
-  });
-  next();
+  res.status(200).json(genericResponse);
 });
 exports.resetPassword = catchAsync(async (req, res, next) => {
   // get user based on the token
@@ -271,8 +294,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // log in user after changing password
   const message = `your password has been changed ,,, you are now logged in`;
   sendTokenRespone(user, 200, res, message);
-
-  next();
 });
 
 // update password
@@ -287,8 +308,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
   const message = 'your password has been changed';
   sendTokenRespone(user, 200, res, message);
-
-  next();
 });
 
 // to update me

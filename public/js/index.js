@@ -1,4 +1,3 @@
-import '@babel/polyfill';
 import { login } from './login';
 import { signup } from './signup';
 import { displayMap } from './mapbox';
@@ -21,7 +20,7 @@ const bookBtn = document.getElementById('book-tour');
 // delegation
 if (mapBox) {
   const locations = JSON.parse(mapBox.dataset.locations);
-  displayMap(locations);
+  if (mapBox.dataset.token) displayMap(locations, mapBox.dataset.token);
 }
 if (loginForm) {
   loginForm.addEventListener('submit', (e) => {

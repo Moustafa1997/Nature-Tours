@@ -3,34 +3,23 @@ const express = require('express');
 const booking = express.Router();
 const authController = require('../controller/authController');
 
+// all booking routes need a logged in user
+booking.use(authController.protect);
+
 // routes to check out session
-booking.get(
-  '/checkout-session/:tourID',
-  authController.protect,
-  bookingController.getCheckoutSession,
-);
-// route for creating a new booking
+booking.get('/checkout-session/:tourID', bookingController.getCheckoutSession);
+
+// everything below is only for admins and lead guides
 booking.use(authController.restrictTo('admin', 'lead-guide'));
-booking.post(
-  '/newBooking',
-  authController.protect,
-  bookingController.createBooking,
-);
-// route for getting all the bookings of a user
-booking.get(
-  '/userBookings',
-  authController.protect,
-  bookingController.getAllBookings,
-);
+// route for creating a new booking
+booking.post('/newBooking', bookingController.createBooking);
+// route for getting all the bookings
+booking.get('/userBookings', bookingController.getAllBookings);
 // route for deleting a booking
-booking.delete('/:id', authController.protect, bookingController.deleteBooking);
+booking.delete('/:id', bookingController.deleteBooking);
 // get specific bookibg
-booking.get('/:id', authController.protect, bookingController.getBooking);
+booking.get('/:id', bookingController.getBooking);
 // to update bookig
-booking.patch(
-  '/update/:id',
-  authController.protect,
-  bookingController.updateBooking,
-);
+booking.patch('/update/:id', bookingController.updateBooking);
 
 module.exports = booking;

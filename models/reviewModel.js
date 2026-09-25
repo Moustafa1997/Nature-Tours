@@ -89,13 +89,13 @@ reviewSchema.post('save', function () {
 
  // change average rating when review is updated or deleted
 reviewSchema.pre(/^findOneAnd/, async function (next) {
-  this.r = await this.findOne();
+  // clone the query so the original one can still be executed (mongoose >= 6)
+  this.r = await this.clone().findOne();
   next();
 });
 reviewSchema.post(/^findOneAnd/, async function () {
-
-   const model = this.r.constructor;
-  await model.calcAverageRatings(this.r.tour);
-})
+  if (!this.r) return;
+  await this.r.constructor.calcAverageRatings(this.r.tour);
+});
 module.exports=mongoose.model("Review",reviewSchema);
  

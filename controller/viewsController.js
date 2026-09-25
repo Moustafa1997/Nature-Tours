@@ -23,11 +23,11 @@ exports.getTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findOne({ slug: req.params.slug })
     .populate({
       path: 'reviews',
-      fields: 'review rating user',
+      select: 'review rating user',
     })
     .populate({
       path: 'guides',
-      fields: 'name email',
+      select: 'name photo role',
     });
 
   if (!tour) {
@@ -40,6 +40,7 @@ exports.getTour = catchAsync(async (req, res, next) => {
     .render('tour', {
       title: tour.name,
       tour,
+      mapboxToken: process.env.MAPBOX_TOKEN,
     });
 });
 //login
@@ -76,14 +77,12 @@ exports.updateAccount = catchAsync(async (req, res, next) => {
   //2) update the user
   const updatedUser = await User.findByIdAndUpdate(
     user.id,
-    { name: req.body.name, email: req.body.email, photo: req.file.photo },
+    { name: req.body.name, email: req.body.email },
     {
       new: true,
       runValidators: true,
     },
   );
-  //3) save the user
-  await updatedUser.save();
   //4) update the session
   //req.session.user = updatedUser;
   //5) redirect to the user account page

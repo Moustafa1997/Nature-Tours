@@ -53,7 +53,7 @@ const sendErrorProd = (err, req, res) => {
   //api
   if (req.originalUrl.startsWith('/api')) {
     if (err.isOperational) {
-      res.status(err.statusCode).json({
+      return res.status(err.statusCode).json({
         status: err.status,
         message: err.message,
       });
@@ -72,7 +72,8 @@ const sendErrorProd = (err, req, res) => {
       msg: err.message,
     });
   }
-  return res.status(err.statusCode).render('error', {
+  console.error('ERROR', err);
+  return res.status(500).render('error', {
     title: 'Something went wrong',
     msg: 'please try again later',
   });
@@ -86,7 +87,8 @@ module.exports = (err, req, res, next) => {
     //let error = { ...err };
 
     sendErrorDev(err, req, res);
-  } else if (process.env.NODE_ENV === 'production') {
+  } else {
+    // production (or NODE_ENV not set): never leak stack traces
     //handle cast to object id error
     if (err.name === 'CastError') err = handelCastError(err);
 

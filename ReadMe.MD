@@ -166,9 +166,13 @@ If you wish to play around with the code base in your local environment, do the 
     * DATABASE=your Mongodb database URL
     * DATABASE_PASSWORD=your MongoDB password
 
-    * SECRET=your JSON web token secret
+    * JWT_SECRET=your JSON web token secret (at least 32 random characters)
     * JWT_EXPIRES_IN=90d
     * JWT_COOKIE_EXPIRES_IN=90
+    * APP_URL=public url of the site, e.g. https://nature-tours-development.up.railway.app (used in emails and Stripe redirects)
+    * STRIPE_SECRET_KEY=your stripe secret key
+    * MAPBOX_TOKEN=your public mapbox access token (pk....)
+    * SENDGRID_API_KEY=your sendgrid api key
 
     * EMAIL_USERNAME=your mailtrap username
     * EMAIL_PASSWORD=your mailtrap password
