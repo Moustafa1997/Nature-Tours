@@ -26,6 +26,10 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   if (!tour) {
     return next(new AppError('No tour found with that ID', 404));
   }
+  // a tour can only be booked once per user
+  if (await Booking.exists({ tour: tour._id, user: req.user._id })) {
+    return next(new AppError('You have already booked this tour', 400));
+  }
 
   //2) create checkout session
   const session = await stripe().checkout.sessions.create({
@@ -46,7 +50,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
           product_data: {
             name: `${tour.name} Tour`,
             description: tour.summary,
-            images: [`https://www.natours.dev/img/tours/${tour.imageCover}`],
+            images: [`${baseUrl(req)}/img/tours/${tour.imageCover}`],
           },
 
           unit_amount: Math.round(tour.price * 100),
@@ -92,6 +96,15 @@ exports.deleteBooking = factory.deleteHandler(
   204,
   'booking deleted successfuly',
 );
+// admins / lead guides can not create the same booking twice
+exports.checkDuplicateBooking = catchAsync(async (req, res, next) => {
+  const { tour, user } = req.body;
+  if (tour && user && (await Booking.exists({ tour, user }))) {
+    return next(new AppError('This user has already booked this tour', 400));
+  }
+  next();
+});
+
 // to create booking
 exports.createBooking = factory.createHandler(
   Booking,

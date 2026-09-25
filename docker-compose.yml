@@ -1,0 +1,37 @@
+# local development / self hosting: `docker compose up --build`
+# secrets (JWT_SECRET, STRIPE_SECRET_KEY, SENDGRID_API_KEY, MAPBOX_TOKEN ...) are read from config.env
+services:
+  app:
+    build: .
+    ports:
+      - '8000:8000'
+    env_file:
+      - config.env
+    environment:
+      # use the mongo container below instead of Atlas
+      DATABASE: mongodb://mongo:27017/natours
+      APP_URL: http://localhost:8000
+      PORT: 8000
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - uploads-users:/usr/src/app/public/img/users
+      - uploads-tours:/usr/src/app/public/img/tours
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.runCommand({ ping: 1 })']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+  uploads-users:
+  uploads-tours:

@@ -97,6 +97,12 @@ module.exports = (err, req, res, next) => {
     if (err.name === 'ValidationError') err = handleValidationError(err);
     if (err.name === 'JsonWebTokenError') err = handleInvalidSignature(err);
     if (err.name === 'TokenExpiredError') err = handleExpiredToken(err);
+    // client errors from express / body-parser (invalid json, body too large)
+    if (!err.isOperational && err.expose && err.status < 500) {
+      err = new AppError(err.message, err.status);
+    }
+    // upload errors (file too large ...)
+    if (err.name === 'MulterError') err = new AppError(err.message, 400);
 
     sendErrorProd(err, req, res);
   }

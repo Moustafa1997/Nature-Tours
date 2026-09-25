@@ -21,6 +21,9 @@
 ## Key Features 
 - Authentication and Authorization
   - Sign up, Log in, Logout, Update, and reset password.
+  - Email confirmation after sign up (needed before booking).
+  - Short lived access tokens + refresh tokens (sessions are revoked on logout / password change).
+  - Two-factor authentication with any authenticator app (TOTP + QR code).
 - User profile
   - Update username, photo, email, password, and other information
   - A user can be either a regular user or an admin or a lead guide or a guide.
@@ -46,6 +49,9 @@
   - Regular users can edit and delete their own reviews.
   - Regular users can not review the same tour twice.
   - An admin can delete any review.
+- Real time (Socket.io)
+  - New reviews appear live on the tour page.
+  - See how many other people are looking at a tour right now.
 - Favorite Tours
   - A regular user can add any of their booked tours to their list of favorite tours.
   - A regular user can remove a tour from their list of favorite tours.
@@ -128,6 +134,24 @@ https://nature-tours-development.up.railway.app/api/v1/tours/top-5-cheap
 Get Tours Within Radius 👉🏻
 https://nature-tours-development.up.railway.app/api/v1/tours/tours-within/200/center/34.098453,-118.096327/unit/mi
 
+<b> New endpoints: </b>
+
+```
+POST   /api/v1/users/refreshToken            new access token (body.refreshToken or cookie), rotates the refresh token
+POST   /api/v1/users/logout                  revokes the refresh token
+GET    /api/v1/users/confirmEmail/:token     confirm email
+POST   /api/v1/users/resendConfirmation      send the confirmation email again
+POST   /api/v1/users/2fa/setup               secret + QR code for an authenticator app
+POST   /api/v1/users/2fa/enable              { code }
+POST   /api/v1/users/2fa/disable             { password, code }
+POST   /api/v1/users/login                   { email, password, code? } (code needed when 2FA is on)
+GET    /api/v1/users/favorites               my favorite tours
+POST   /api/v1/users/favorites/:tourId       add a booked tour to favorites
+DELETE /api/v1/users/favorites/:tourId       remove from favorites
+GET    /api/v1/reviews/my-reviews            my reviews
+GET    /health                               app + database status
+```
+
 ## Build With 
 
 - [NodeJS](https://nodejs.org/en/) - JS runtime environment
@@ -136,7 +160,10 @@ https://nature-tours-development.up.railway.app/api/v1/tours/tours-within/200/ce
 - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) - Cloud database service
 - [Pug](https://pugjs.org/api/getting-started.html) - High performance template engine
 - [JSON Web Token](https://jwt.io/) - Security token
-- [ParcelJS](https://parceljs.org/) - Blazing fast, zero configuration web application bundler
+- [esbuild](https://esbuild.github.io/) - Extremely fast JavaScript bundler
+- [Socket.io](https://socket.io/) - Real time reviews and live viewers
+- [Jest](https://jestjs.io/) & [Supertest](https://github.com/ladjs/supertest) - Testing
+- [Docker](https://www.docker.com/) - Containers (Dockerfile + docker compose)
 - [Stripe](https://stripe.com/) - Online payment API and Making payments on the app.
 - [Postman](https://www.getpostman.com/) - API testing
 - [Mailtrap](https://mailtrap.io/) & [Sendgrid](https://sendgrid.com/) - Email delivery platform
@@ -145,12 +172,16 @@ https://nature-tours-development.up.railway.app/api/v1/tours/tours-within/200/ce
 
 ## To-do 
 
-- Review and rating
-  - Allow users to add a review directly at the website after they have taken a tour
-- Booking
-  - Prevent duplicate bookings after a user has booked that exact tour, implement favorite tours
-- Advanced authentication features
-  - Signup, confirm user email, log in with refresh token, two-factor authentication
+- [x] Review and rating
+  - [x] Allow users to add a review directly at the website after they have taken a tour (tour page + "My reviews" page)
+- [x] Booking
+  - [x] Prevent duplicate bookings after a user has booked that exact tour
+  - [x] Implement favorite tours ("My favorites" page)
+- [x] Advanced authentication features
+  - [x] Signup, confirm user email
+  - [x] Log in with refresh token
+  - [x] Two-factor authentication
+- [ ] Admin dashboard pages (manage tours / users / reviews / bookings from the website)
 - And More! There's always room for improvement!
 
 ## Setting Up Your Local Environment ⚙️
@@ -167,8 +198,8 @@ If you wish to play around with the code base in your local environment, do the 
     * DATABASE_PASSWORD=your MongoDB password
 
     * JWT_SECRET=your JSON web token secret (at least 32 random characters)
-    * JWT_EXPIRES_IN=90d
-    * JWT_COOKIE_EXPIRES_IN=90
+    * JWT_ACCESS_EXPIRES_IN=15m (lifetime of the access token, default 15m)
+    * REFRESH_TOKEN_EXPIRES_IN_DAYS=30 (lifetime of a login session, default 30)
     * APP_URL=public url of the site, e.g. https://nature-tours-development.up.railway.app (used in emails and Stripe redirects)
     * STRIPE_SECRET_KEY=your stripe secret key
     * MAPBOX_TOKEN=your public mapbox access token (pk....)
@@ -182,9 +213,6 @@ If you wish to play around with the code base in your local environment, do the 
 
     * SENDGRID_USERNAME=apikey
     * SENDGRID_PASSWORD=your sendgrid password
-
-    * STRIPE_SECRET_KEY=your stripe secret key
-    * STRIPE_WEBHOOK_SECRET=your stripe webhook secret
 
 * Start the server.
 * Your app should be running just fine.
@@ -204,6 +232,9 @@ $ npm run start:dev (for development)
 $ npm run start:prod (for production)
 $ npm run debug (for debug)
 $ npm start
+$ npm test (unit tests; set MONGO_URL=mongodb://localhost:27017/natours-test to also run the integration tests)
+Run everything (app + MongoDB) with Docker 🐳
+$ docker compose up --build   (reads your secrets from config.env, app on http://localhost:8000)
 Setting up ESLint and Prettier in VS Code 👇🏻
 $ npm i eslint prettier eslint-config-prettier eslint-plugin-prettier eslint-config-airbnb eslint-plugin-node
 eslint-plugin-import eslint-plugin-jsx-a11y  eslint-plugin-react --save-dev
@@ -220,10 +251,10 @@ Please enjoy and feel free to share your opinion, constructive criticism, or com
 
 ## Future Updates 
 
-- Enable Software Testing (Jest-tool)
-- Improve overall UX/UI and fix bugs
-- Enable Docker
-- add some features with Socketio
+- [x] Enable Software Testing (Jest + Supertest, runs in GitHub Actions with a real MongoDB)
+- [x] Improve overall UX/UI and fix bugs (forgot / reset password pages, account navigation, empty states, error pages, 2FA & email confirmation UI)
+- [x] Enable Docker (`Dockerfile` with health check + `docker-compose.yml` with MongoDB)
+- [x] Add some features with Socket.io (live reviews, live viewers)
 - And More! There's always room for improvement!
 
 ## Deployed Version 🚀

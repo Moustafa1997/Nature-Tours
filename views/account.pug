@@ -1,37 +1,21 @@
 extends base
-
-mixin navItem(link, text, icon, active)
-  li(class=`${active ? 'side-nav--active' : ''}`)
-    a(href=`${link}`)
-      svg
-        use(xlink:href=`img/icons.svg#icon-${icon}`)
-      | #{text}
+include _accountNav
 
 block content
   main.main
     .user-view
-      nav.user-view__menu
-        ul.side-nav
-          +navItem('#', 'Settings', 'settings', true)
-          +navItem('/my-tours', 'My bookings', 'briefcase')
-          +navItem('#', 'My reviews', 'star')
-          +navItem('#', 'Billing', 'credit-card')
-
-        - if (user.role === 'admin')
-          .admin-nav
-            h5.admin-nav__heading Admin
-            ul.side-nav
-              +navItem('#', 'Manage tours', 'map')
-              +navItem('#', 'Manage users', 'users')
-              +navItem('#', 'Manage reviews', 'star')
-              +navItem('#', 'Manage bookings', 'briefcase')
+      +accountNav(active)
 
       .user-view__content
+        if !user.isEmailConfirmed
+          .user-view__form-container
+            .notice.notice--warning
+              p Please confirm your email address to book tours. Check your inbox for the confirmation link.
+              button.btn.btn--small.btn--green#resend-confirmation Resend confirmation email
+          .line &nbsp;
+
         .user-view__form-container
           h2.heading-secondary.ma-bt-md Your account settings
-          
-          //- WITHOUT API
-          //-form.form.form-user-data(action='/submit-user-data' method='POST')
           
           //- WITH API
           form.form.form-user-data
@@ -55,12 +39,43 @@ block content
           form.form.form-user-password
             .form__group
               label.form__label(for='password-current') Current password
-              input#password-current.form__input(type='password', placeholder='••••••••', required, minlength='8')
+              input#password-current.form__input(type='password', placeholder='••••••••', required, minlength='8', autocomplete='current-password')
             .form__group
               label.form__label(for='password') New password
-              input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
+              input#password.form__input(type='password', placeholder='••••••••', required, minlength='8', autocomplete='new-password')
             .form__group.ma-bt-lg
               label.form__label(for='password-confirm') Confirm password
-              input#password-confirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
+              input#password-confirm.form__input(type='password', placeholder='••••••••', required, minlength='8', autocomplete='new-password')
             .form__group.right
               button.btn.btn--small.btn--green.btn--save-password Save password
+
+        .line &nbsp;
+
+        .user-view__form-container
+          h2.heading-secondary.ma-bt-md Two-factor authentication
+          if user.twoFactorEnabled
+            p.notice.notice--success Two-factor authentication is ON. You need a code from your authenticator app to log in.
+            form.form.form-2fa-disable
+              .form__group
+                label.form__label(for='disable-password') Password
+                input#disable-password.form__input(type='password', required, minlength='8', autocomplete='current-password')
+              .form__group.ma-bt-md
+                label.form__label(for='disable-code') Code from your app
+                input#disable-code.form__input(type='text', inputmode='numeric', pattern='[0-9]{6}', maxlength='6', required, autocomplete='one-time-code')
+              .form__group.right
+                button.btn.btn--small.btn--white Turn off
+          else
+            p.notice Protect your account with a code from an authenticator app (Google Authenticator, Authy, 1Password ...).
+            .two-factor-setup
+              button.btn.btn--small.btn--green#setup-2fa Set up two-factor
+            form.form.form-2fa-enable.hidden
+              .two-factor__qr
+                img#qr-code(alt='QR code for your authenticator app')
+                p.two-factor__secret
+                  | Can't scan? Enter this key:
+                  code#secret-key
+              .form__group.ma-bt-md
+                label.form__label(for='enable-code') Enter the 6-digit code
+                input#enable-code.form__input(type='text', inputmode='numeric', pattern='[0-9]{6}', maxlength='6', required, autocomplete='one-time-code')
+              .form__group.right
+                button.btn.btn--small.btn--green Turn on

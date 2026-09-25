@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const morgan = require('morgan');
 const AppError = require('./utils/appError');
 const globalHandlerError = require('./controller/errorController');
@@ -70,6 +71,7 @@ const limiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
   message: 'Too many request from this IP, please try again in an hour!',
 });
 app.use('/api', limiter);
@@ -80,6 +82,7 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
   message: 'Too many attempts from this IP, please try again later!',
 });
 app.use(
@@ -88,6 +91,7 @@ app.use(
     '/api/v1/users/SignUp',
     '/api/v1/users/forgetPassword',
     '/api/v1/users/resetPassword',
+    '/api/v1/users/2fa',
   ],
   authLimiter,
 );
@@ -124,6 +128,16 @@ app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
+// health check for render / docker
+app.get('/health', (req, res) => {
+  const dbUp = mongoose.connection.readyState === 1;
+  res.status(dbUp ? 200 : 503).json({
+    status: dbUp ? 'ok' : 'degraded',
+    database: dbUp ? 'connected' : 'disconnected',
+    uptime: Math.round(process.uptime()),
+  });
+});
+
 app.use('/', viewRouter);
 
 app.use('/api/v1/tours', tourRouter);

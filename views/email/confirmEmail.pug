@@ -1,9 +1,8 @@
 extends base_email 
 block content 
     p Hi #{firstName},
-        p Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: #{url}.\n
-        p Website for this action not yet implemented.
-        
+        p Welcome to Natours, we're glad to have you 🎉🙏
+        p Please confirm your email address so you can start booking tours. The link is valid for 24 hours.
         table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
             tbody
                 tr
@@ -12,6 +11,5 @@ block content
                             tbody
                                 tr
                                     td
-                                        a(href=`${url}`, target='_blank') reset your password
-        p If you didn't forget your password, please ignore this email!
-  
+                                        a(href=`${url}`, target='_blank') Confirm my email
+        p If you didn't create an account, please ignore this email!
