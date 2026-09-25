@@ -1,0 +1,23 @@
+extends base
+include _accountNav
+
+block content
+  main.main
+    .user-view
+      +accountNav(active)
+
+      .user-view__content
+        .user-view__form-container
+          h2.heading-secondary.ma-bt-md My reviews
+          if reviews.length === 0
+            p.notice You haven't written any reviews yet. You can review tours you have booked from the tour page.
+          else
+            ul.my-reviews
+              each review in reviews
+                li.my-reviews__item
+                  .my-reviews__head
+                    if review.tour
+                      a.my-reviews__tour(href=`/tour/${review.tour.slug}`)= review.tour.name
+                    span.my-reviews__rating= `${'★'.repeat(review.rating || 0)}${'☆'.repeat(5 - (review.rating || 0))}`
+                  p.my-reviews__text= review.review
+                  button.btn.btn--small.btn--white.btn--delete-review(data-review-id=`${review.id}`) Delete

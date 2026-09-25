@@ -5,13 +5,16 @@ const authController = require('../controller/authController');
 // for parsing multipart/form-data
 user.route('/SignUp').post(authController.SignUp);
 user.route('/login').post(authController.login);
-user.route('/logout').get(authController.logout);
+user.route('/logout').get(authController.logout).post(authController.logout);
+user.route('/refreshToken').post(authController.refreshToken);
 user.route('/forgetPassword').post(authController.forgetpassword);
 user.route('/resetPassword/:token').patch(authController.resetPassword);
+user.route('/confirmEmail/:token').get(authController.confirmEmail);
 
 //middle  ware to protect
 user.use(authController.protect);
 
+user.route('/resendConfirmation').post(authController.resendConfirmation);
 user.route('/updatePassword').patch(authController.updatePassword);
 user
   .route('/updateMe')
@@ -25,6 +28,18 @@ user.route('/deleteMe').delete(authController.deleteMe);
 // to get me
 
 user.get('/me', authController.getMe, userController.getSingleUser);
+
+// two-factor authentication
+user.post('/2fa/setup', authController.setupTwoFactor);
+user.post('/2fa/enable', authController.enableTwoFactor);
+user.post('/2fa/disable', authController.disableTwoFactor);
+
+// favorite tours
+user.get('/favorites', userController.getFavorites);
+user
+  .route('/favorites/:tourId')
+  .post(authController.restrictTo('user'), userController.addFavorite)
+  .delete(authController.restrictTo('user'), userController.removeFavorite);
 
 // middle ware before next routes
 user.use(authController.restrictTo('admin'));

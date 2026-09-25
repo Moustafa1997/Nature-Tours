@@ -1,0 +1,10 @@
+extends base
+
+block content
+  main.main
+    .error
+      .error__title
+        h2.heading-secondary.ma-bt-lg= heading
+      .error__msg= msg
+      if link
+        a.btn.btn--green.btn--small.ma-bt-lg(href=link)= linkText

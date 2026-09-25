@@ -31,7 +31,7 @@ block content
         .heading-box__detail
           svg.heading-box__icon
             use(xlink:href='/img/icons.svg#icon-map-pin')
-          span.heading-box__text= tour.startLocation.description
+          span.heading-box__text= tour.startLocation ? tour.startLocation.description : ''
 
   section.section-description
     .overview-box
@@ -39,7 +39,7 @@ block content
         .overview-box__group
           h2.heading-secondary.ma-bt-lg Quick facts
 
-          - const date = tour.startDates[0].toLocaleString('en-us', {month: 'long', year: 'numeric'})
+          - const date = tour.startDates && tour.startDates[0] ? tour.startDates[0].toLocaleString('en-us', {month: 'long', year: 'numeric'}) : 'To be announced'
           +overviewBox('Next date', date, 'calendar')
           +overviewBox('Difficulty', tour.difficulty, 'trending-up')
           +overviewBox('Participants', `${tour.maxGroupSize} people`, 'user')
@@ -60,7 +60,7 @@ block content
 
     .description-box
       h2.heading-secondary.ma-bt-lg= `About ${tour.name} tour`
-      - const parapraphs = tour.description.split('\n');
+      - const parapraphs = (tour.description || tour.summary || '').split('\n');
       each p in parapraphs
         p.description__text= p
 
@@ -73,20 +73,48 @@ block content
     #map(data-locations=`${JSON.stringify(tour.locations)}` data-token=mapboxToken)
 
   section.section-reviews
+    p.live-viewers#live-viewers(data-tour-id=`${tour.id}`)
     .reviews
       each review in tour.reviews
         +reviewCard(review)
+
+  if canReview
+    section.section-review-form
+      .login-form
+        h2.heading-secondary.ma-bt-lg How was your tour?
+        form.form.form--review(data-tour-id=`${tour.id}`)
+          .form__group
+            label.form__label(for='rating') Rating
+            select#rating.form__input(required)
+              each r in [5, 4, 3, 2, 1]
+                option(value=r)= `${'★'.repeat(r)} (${r})`
+          .form__group.ma-bt-md
+            label.form__label(for='review-text') Your review
+            textarea#review-text.form__input(rows='4', required, maxlength='500', placeholder='Tell other travellers about your experience')
+          .form__group
+            button.btn.btn--green Post review
 
   section.section-cta
     .cta
       .cta__img.cta__img--logo
         img(src='/img/logo-white.png', alt='Natours logo')
-      img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
-      img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
+      if tour.images && tour.images[1]
+        img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
+      if tour.images && tour.images[2]
+        img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
       .cta__content
         h2.heading-secondary What are you waiting for?
         p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
-        if user
-          button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
-        else    
-          a.btn.btn--green.span-all-rows(href='/login') log in to book tour  
+        if !user
+          a.btn.btn--green.span-all-rows(href='/login') log in to book tour
+        else if booked
+          .span-all-rows.tour-actions
+            p.cta__text You have booked this tour 🎉
+            if user.role === 'user'
+              button.btn.btn--white.btn--small#favorite-tour(data-tour-id=`${tour.id}`, data-favorite=`${isFavorite}`)= isFavorite ? '♥ Remove from favorites' : '♡ Add to favorites'
+        else if user.role !== 'user'
+          p.cta__text.span-all-rows Only travellers (user accounts) can book tours.
+        else if !user.isEmailConfirmed
+          a.btn.btn--green.span-all-rows(href='/me') Confirm your email to book
+        else
+          button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!  

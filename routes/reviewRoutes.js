@@ -2,15 +2,19 @@ const reviewController = require('../controller/reviewsController');
 const express = require('express');
 const Review = express.Router({ mergeParams: true });
 const authController = require('../controller/authController');
-const middleware=require('../middleware/middlewares')
+const middleware = require('../middleware/middlewares');
 Review.use(authController.protect);
 Review.route('/')
   .get(reviewController.getAllReviews)
   .post(
     authController.restrictTo('user'),
     middleware.checkId,
+    reviewController.checkBooked,
     reviewController.createReview,
   );
+
+// reviews of the logged in user
+Review.get('/my-reviews', reviewController.getMyReviews);
 
 //delete route
 Review.route('/:id')

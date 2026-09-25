@@ -7,9 +7,16 @@ block content
       form.form.form--login
         .form__group
           label.form__label(for='email') Email address
-          input#email.form__input(type='email', placeholder='you@example.com', required)
+          input#email.form__input(type='email', placeholder='you@example.com', required, autocomplete='email')
         .form__group.ma-bt-md
           label.form__label(for='password') Password
-          input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
+          input#password.form__input(type='password', placeholder='••••••••', required, minlength='8', autocomplete='current-password')
+        .form__group.ma-bt-md.hidden#code-group
+          label.form__label(for='code') Two-factor code
+          input#code.form__input(type='text', inputmode='numeric', pattern='[0-9]{6}', maxlength='6', autocomplete='one-time-code', placeholder='123456')
         .form__group
           button.btn.btn--green Login
+        .form__group
+          a.form__link(href='/forgot-password') Forgot your password?
+          |  · 
+          a.form__link(href='/signup') Create an account

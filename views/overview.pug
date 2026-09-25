@@ -2,6 +2,10 @@ extends base
 
 block content
   main.main
+    if heading
+      h2.heading-secondary.page-heading= heading
+    if tours.length === 0
+      p.notice.page-empty= empty || 'No tours found.'
     .card-container
     
       each tour in tours
@@ -19,11 +23,11 @@ block content
             .card__data
               svg.card__icon
                 use(xlink:href='/img/icons.svg#icon-map-pin')
-              span= tour.startLocation.description
+              span= tour.startLocation ? tour.startLocation.description : ''
             .card__data
               svg.card__icon
                 use(xlink:href='/img/icons.svg#icon-calendar')
-              span= tour.startDates[0].toLocaleString('en-us', {month: 'long', year: 'numeric'})
+              span= tour.startDates && tour.startDates[0] ? tour.startDates[0].toLocaleString('en-us', {month: 'long', year: 'numeric'}) : 'To be announced'
             .card__data
               svg.card__icon
                 use(xlink:href='/img/icons.svg#icon-flag')

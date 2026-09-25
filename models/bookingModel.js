@@ -18,13 +18,16 @@ const bookScema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   paid: {
     type: Boolean,
     default: true,
   },
 });
+// a user can book the same tour only once
+bookScema.index({ tour: 1, user: 1 }, { unique: true });
+
 // middle ware to populate
 bookScema.pre(/^find/, function (next) {
   this.populate('user').populate({

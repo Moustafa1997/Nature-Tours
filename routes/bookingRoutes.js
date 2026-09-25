@@ -7,12 +7,22 @@ const authController = require('../controller/authController');
 booking.use(authController.protect);
 
 // routes to check out session
-booking.get('/checkout-session/:tourID', bookingController.getCheckoutSession);
+// only regular users with a confirmed email can book (and pay for) tours
+booking.get(
+  '/checkout-session/:tourID',
+  authController.restrictTo('user'),
+  authController.requireConfirmedEmail,
+  bookingController.getCheckoutSession,
+);
 
 // everything below is only for admins and lead guides
 booking.use(authController.restrictTo('admin', 'lead-guide'));
 // route for creating a new booking
-booking.post('/newBooking', bookingController.createBooking);
+booking.post(
+  '/newBooking',
+  bookingController.checkDuplicateBooking,
+  bookingController.createBooking,
+);
 // route for getting all the bookings
 booking.get('/userBookings', bookingController.getAllBookings);
 // route for deleting a booking

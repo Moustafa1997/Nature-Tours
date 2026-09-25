@@ -9,6 +9,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 const app = require('./app');
+const socket = require('./utils/socket');
 //to connect with db
 const DB = (process.env.DATABASE || process.env.DATABASE_LOCAL || '').replace(
   '<PASSWORD>',
@@ -38,6 +39,8 @@ const port = process.env.PORT || 8000;
 const server = app.listen(port, () => {
   console.log(`Server listening on port : ${port}`);
 });
+// real time features (live reviews / viewers)
+socket.init(server);
 // mongoose reconnects by itself after the first connection, just log errors
 mongoose.connection.on('error', (err) => {
   console.log('DB error:', err.message);

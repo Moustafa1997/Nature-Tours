@@ -1322,3 +1322,134 @@ body {
   -webkit-transform: translateY(-2px);
   transform: translateY(-2px);
 }
+
+/* ---------- added: new features (reviews form, favorites, 2FA, notices) ---------- */
+.hidden {
+  display: none !important;
+}
+
+.notice {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: #777;
+  margin-bottom: 2rem;
+}
+.notice--warning {
+  background-color: #fff4e5;
+  border-left: 4px solid #ffb900;
+  padding: 2rem;
+  border-radius: 4px;
+  color: #555;
+}
+.notice--warning p {
+  margin-bottom: 1.5rem;
+}
+.notice--success {
+  color: #28b487;
+  font-weight: 700;
+}
+
+.page-heading {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+.page-empty {
+  text-align: center;
+}
+
+.form__link {
+  font-size: 1.4rem;
+  color: #55c57a;
+  text-decoration: none;
+}
+.form__link:hover {
+  text-decoration: underline;
+}
+
+textarea.form__input {
+  resize: vertical;
+}
+
+.section-review-form {
+  padding: 8rem 3rem 12rem;
+  background-color: #f7f7f7;
+}
+
+.live-viewers {
+  text-align: center;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-height: 2rem;
+}
+
+.tour-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.two-factor__qr {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  font-size: 1.4rem;
+}
+.two-factor__qr img {
+  width: 16rem;
+  height: 16rem;
+}
+.two-factor__secret code {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.4rem;
+  word-break: break-all;
+  background-color: #f2f2f2;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.my-reviews {
+  list-style: none;
+}
+.my-reviews__item {
+  padding: 2rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.my-reviews__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.my-reviews__tour {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #55c57a;
+  text-decoration: none;
+}
+.my-reviews__rating {
+  color: #55c57a;
+  font-size: 1.8rem;
+}
+.my-reviews__text {
+  font-size: 1.5rem;
+  color: #777;
+  margin-bottom: 1.5rem;
+}
+
+.reviews__card--new {
+  animation: review-in 0.6s ease-out;
+}
+@keyframes review-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -2,7 +2,7 @@ const sgMail = require('@sendgrid/mail');
 const pug = require('pug');
 const { convert } = require('html-to-text');
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 module.exports = class Email {
   constructor(user, url) {
@@ -37,6 +37,10 @@ module.exports = class Email {
 
   async sendWelcome() {
     await this.send('welcome', 'Welcome to the Natours Family');
+  }
+
+  async sendConfirmEmail() {
+    await this.send('confirmEmail', 'Please confirm your email address');
   }
 
   async sendPasswordReset() {

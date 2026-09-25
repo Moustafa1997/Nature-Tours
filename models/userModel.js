@@ -25,7 +25,6 @@ const userSchema = new mongoose.Schema({
     //   validator: (v) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v),
     //   message: 'please enter a valid email',
     // },
-    lowercase: true,
     maxlength: [60, 'an email must have less or equal then 40 characters'],
     minlength: [10, 'an email must have more or equal then 10 characters'],
   },
@@ -63,11 +62,29 @@ const userSchema = new mongoose.Schema({
   },
   passwordChangedAt: {
     type: Date,
-    default: Date.now(),
     select: false,
   },
   passwordResetToken: { type: String, select: false },
   passwordResetExpires: { type: Date, select: false },
+
+  // email confirmation (accounts created before this feature have no value
+  // and are treated as confirmed)
+  emailConfirmed: Boolean,
+  emailConfirmToken: { type: String, select: false },
+  emailConfirmExpires: { type: Date, select: false },
+
+  // two-factor authentication (TOTP)
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret: { type: String, select: false },
+  twoFactorLastStep: { type: Number, select: false },
+
+  // favorite tours (only tours the user has booked)
+  favoriteTours: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Tour',
+    },
+  ],
 });
 // pre middle ware to encrypt password
 userSchema.pre('save', async function (next) {
@@ -115,6 +132,22 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
+
+// token sent by email to confirm the address
+userSchema.methods.createEmailConfirmToken = function () {
+  const confirmToken = crypto.randomBytes(32).toString('hex');
+  this.emailConfirmToken = crypto
+    .createHash('sha256')
+    .update(confirmToken)
+    .digest('hex');
+  this.emailConfirmExpires = Date.now() + 24 * 60 * 60 * 1000;
+  return confirmToken;
+};
+
+// old accounts (no value) count as confirmed
+userSchema.virtual('isEmailConfirmed').get(function () {
+  return this.emailConfirmed !== false;
+});
 
 // pre middle ware to prevent return inactive user
 userSchema.pre(/^find/, function (next) {

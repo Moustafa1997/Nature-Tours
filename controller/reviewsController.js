@@ -1,6 +1,8 @@
 const Review = require('./../models/reviewModel');
+const Booking = require('./../models/bookingModel');
 const catchasync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const socket = require('./../utils/socket');
 const factory = require(`${__dirname}/handler-Methods-Req`);
 //to get all reviews
 exports.getAllReviews = catchasync(async (req, res) => {
@@ -17,28 +19,79 @@ exports.getAllReviews = catchasync(async (req, res) => {
   });
 });
 
-
 exports.deleteReview = factory.deleteHandler(
   Review,
   204,
-  'tour deleted successfuly',
+  'review deleted successfuly',
 );
-// to post new tour
-exports.createReview = factory.createHandler(
-  Review,
-  201,
-  'review created successfuly',
-);
-//to update tour
+
+// users can only review tours they have booked (and only once, unique index)
+exports.checkBooked = catchasync(async (req, res, next) => {
+  const booked = await Booking.exists({
+    tour: req.body.tour,
+    user: req.user._id,
+  });
+  if (!booked) {
+    return next(
+      new AppError('You can only review tours that you have booked', 403),
+    );
+  }
+  const reviewed = await Review.exists({
+    tour: req.body.tour,
+    user: req.user._id,
+  });
+  if (reviewed) {
+    return next(new AppError('You have already reviewed this tour', 400));
+  }
+  next();
+});
+
+// to post new review (and push it live to everybody on the tour page)
+exports.createReview = catchasync(async (req, res, next) => {
+  const review = await Review.create({
+    review: req.body.review,
+    rating: req.body.rating,
+    tour: req.body.tour,
+    user: req.body.user,
+  });
+  socket.emitToTour(String(review.tour), 'review:new', {
+    review: review.review,
+    rating: review.rating,
+    user: { name: req.user.name, photo: req.user.photo },
+  });
+  res.status(201).json({
+    status: 'success',
+    requestTime: req.requestTime,
+    message: 'review created successfuly',
+    data: {
+      data: review,
+    },
+  });
+});
+//to update review
 exports.updateReview = factory.updateHandler(
   Review,
   200,
-  'tour updated successfuly',
+  'review updated successfuly',
 );
 //toget review
 exports.getReview = factory.getOneHandler(Review, 200, 'enjoy with reviews');
-//  function to update  ratingn avg when user delete or update review
- 
+
+// reviews of the logged in user
+exports.getMyReviews = catchasync(async (req, res) => {
+  const reviews = await Review.find({ user: req.user._id }).populate({
+    path: 'tour',
+    select: 'name slug imageCover',
+  });
+  res.status(200).json({
+    status: 'success',
+    results: reviews.length,
+    data: {
+      reviews,
+    },
+  });
+});
+
 // regular users can only update or delete their own reviews
 exports.checkReviewOwner = catchasync(async (req, res, next) => {
   if (req.user.role === 'admin') return next();
