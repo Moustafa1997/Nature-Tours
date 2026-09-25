@@ -1,10 +1,24 @@
-const { errors } = require('stripe');
 const Tour = require('../models/tourModel');
 const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const factory = require(`${__dirname}/handler-Methods-Req`);
 const AppError = require('./../utils/appError');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Stripe = require('stripe');
+
+// create the client lazily so a missing key does not crash the whole server
+let stripeClient;
+const stripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new AppError('Payments are not configured on this server', 500);
+  }
+  if (!stripeClient) stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+  return stripeClient;
+};
+
+const baseUrl = (req) =>
+  process.env.APP_URL
+    ? process.env.APP_URL.replace(/\/$/, '')
+    : `${req.protocol}://${req.get('host')}`;
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   //1) get the currently booked tour
@@ -14,15 +28,15 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   }
 
   //2) create checkout session
-  const session = await stripe.checkout.sessions.create({
+  const session = await stripe().checkout.sessions.create({
     //info about session
     payment_method_types: ['card'],
-    success_url: `${req.protocol}://${req.get('host')}/?tour=${
-      req.params.tourID
-    }&user=${req.user.id}&price=${tour.price}`,
-    cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
+    // the booking is created from the verified stripe session, never from query params
+    success_url: `${baseUrl(req)}/?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl(req)}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourID,
+    metadata: { tourId: String(tour._id), userId: String(req.user._id) },
 
     //payment
     line_items: [
@@ -35,8 +49,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
             images: [`https://www.natours.dev/img/tours/${tour.imageCover}`],
           },
 
-          currency: 'usd',
-          unit_amount: tour.price * 100,
+          unit_amount: Math.round(tour.price * 100),
         },
         quantity: 1,
       },
@@ -46,20 +59,31 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   //3) create session as response
   res.status(200).json({
     status: 'success',
-    session,
+    session: { id: session.id, url: session.url },
   });
 });
 
 //store booking to db
 exports.createBookingCheckout = catchAsync(async (req, res, next) => {
-  const { tour, user, price } = req.query;
-  if (!tour && !user && !price) return next();
-  await Booking.create({
-    tour,
-    user,
-    price,
-  });
-  res.redirect('/');
+  const sessionId = req.query.session_id;
+  if (typeof sessionId !== 'string' || !sessionId.startsWith('cs_')) {
+    return next();
+  }
+  // verify the payment with stripe instead of trusting the url
+  const session = await stripe().checkout.sessions.retrieve(sessionId);
+  if (session.payment_status !== 'paid' || !session.metadata) {
+    return res.redirect('/');
+  }
+  const { tourId, userId } = session.metadata;
+  const exists = await Booking.exists({ tour: tourId, user: userId });
+  if (!exists) {
+    await Booking.create({
+      tour: tourId,
+      user: userId,
+      price: session.amount_total / 100,
+    });
+  }
+  res.redirect('/my-tours');
 });
 
 //crud operations for booking

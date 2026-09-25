@@ -16,7 +16,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 //multer middleware
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 //upload multi-images for tour and one image cover
 exports.uploadTourImages = upload.fields([
   { name: 'imageCover', maxCount: 1 },
@@ -25,6 +29,7 @@ exports.uploadTourImages = upload.fields([
 
 //resize image middle ware
 exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  if (!req.files) return next();
   if (req.files.imageCover) {
     req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
     //1) resize cover image
@@ -197,18 +202,13 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
   const { distance, latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');
   if (!lat || !lng) {
-    next(
+    return next(
       new AppError(
         'please provide latitude and longitude in the format lat,lng',
         400,
       ),
     );
   }
-
-  console.log('distance', distance);
-  console.log('lat', lat);
-  console.log('lng', lng);
-  console.log('unit', unit);
   // get all tour within a certain radius of center point
   const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
 
@@ -229,11 +229,11 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
 
 // Assuming you have a `Tour` model with a `startLocation` field that represents the coordinates of the tour's starting location
 
-exports.calculateDistance = async (req, res, next) => {
+exports.calculateDistance = catchAsync(async (req, res, next) => {
   const { latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');
   if (!lat || !lng) {
-    next(
+    return next(
       new AppError(
         'please provide latitude and longitude in the format lat,lng',
         400,
@@ -275,4 +275,4 @@ exports.calculateDistance = async (req, res, next) => {
       data: distances,
     },
   });
-};
+});

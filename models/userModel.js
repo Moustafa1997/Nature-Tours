@@ -66,14 +66,8 @@ const userSchema = new mongoose.Schema({
     default: Date.now(),
     select: false,
   },
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-
-  active: {
-    type: Boolean,
-    default: true,
-    // select: false,
-  },
+  passwordResetToken: { type: String, select: false },
+  passwordResetExpires: { type: Date, select: false },
 });
 // pre middle ware to encrypt password
 userSchema.pre('save', async function (next) {

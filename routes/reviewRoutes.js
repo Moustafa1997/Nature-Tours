@@ -16,10 +16,12 @@ Review.route('/')
 Review.route('/:id')
   .delete(
     authController.restrictTo('user', 'admin'),
+    reviewController.checkReviewOwner,
     reviewController.deleteReview,
   )
   .patch(
     authController.restrictTo('user', 'admin'),
+    reviewController.checkReviewOwner,
     reviewController.updateReview,
   )
   .get(reviewController.getReview);

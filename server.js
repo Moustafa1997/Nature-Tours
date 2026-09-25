@@ -10,25 +10,19 @@ process.on('uncaughtException', (err) => {
 });
 const app = require('./app');
 //to connect with db
-const DB = process.env.DATABASE.replace(
+const DB = (process.env.DATABASE || process.env.DATABASE_LOCAL || '').replace(
   '<PASSWORD>',
-  process.env.DATABASE_PASSWORD,
+  process.env.DATABASE_PASSWORD || '',
 );
-const db = process.env.DATABASE_LOCAL;
-mongoose
-  .connect(DB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-  })
-  .then((con) => {
-    // console.log(con.connections);
-    console.log('DB connection successful');
-  });
+if (!DB) {
+  console.log('DATABASE environment variable is missing! 💥 Shutting down...');
+  process.exit(1);
+}
+mongoose.connect(DB).then(() => {
+  console.log('DB connection successful');
+});
 
 const port = process.env.PORT || 8000;
-//console.log(process.env)
 const server = app.listen(port, () => {
   console.log(`Server listening on port : ${port}`);
 });
@@ -38,12 +32,19 @@ mongoose.connection.on('error', (err) => {
   server.close(() => {
     process.exit(1);
   });
-  //process.exit(1);
 });
-// or by process
-/*  process.on('unhandledRejection', (err) => {
-   console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-   console.log(err.name, err.message);
-   process.exit(1);
-  
-}) */
+// handle any promise rejection that was not caught (e.g. db connection failed)
+process.on('unhandledRejection', (err) => {
+  console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+// graceful shutdown when the platform (railway/docker) stops the container
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully');
+  server.close(() => {
+    mongoose.connection.close(false).finally(() => process.exit(0));
+  });
+});

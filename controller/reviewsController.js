@@ -1,5 +1,6 @@
 const Review = require('./../models/reviewModel');
 const catchasync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 const factory = require(`${__dirname}/handler-Methods-Req`);
 //to get all reviews
 exports.getAllReviews = catchasync(async (req, res) => {
@@ -38,3 +39,18 @@ exports.updateReview = factory.updateHandler(
 exports.getReview = factory.getOneHandler(Review, 200, 'enjoy with reviews');
 //  function to update  ratingn avg when user delete or update review
  
+// regular users can only update or delete their own reviews
+exports.checkReviewOwner = catchasync(async (req, res, next) => {
+  if (req.user.role === 'admin') return next();
+  const review = await Review.findById(req.params.id);
+  if (!review) return next(new AppError('Source data not found', 404));
+  // user is populated with "-_id" so compare with the raw id
+  const ownerId = review.populated('user') || review.user;
+  if (String(ownerId) !== String(req.user._id)) {
+    return next(new AppError('You can only modify your own reviews', 403));
+  }
+  // do not allow moving a review to another tour/user
+  delete req.body.user;
+  delete req.body.tour;
+  next();
+});
